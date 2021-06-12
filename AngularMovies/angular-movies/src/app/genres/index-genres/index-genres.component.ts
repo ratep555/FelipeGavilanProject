@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { GenresService } from '../genres.service';
 
 @Component({
   selector: 'app-index-genres',
@@ -7,9 +8,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class IndexGenresComponent implements OnInit {
 
-  constructor() { }
+  constructor(private genresService: GenresService) { }
 
+  // until we subscribe to an observable, the http request will not be send
   ngOnInit(): void {
+   this.genresService.getAll().subscribe(genres => {
+   console.log(genres);
+   });
   }
 
 }

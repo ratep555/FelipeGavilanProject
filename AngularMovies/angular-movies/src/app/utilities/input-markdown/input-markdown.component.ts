@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-input-markdown',
@@ -6,7 +6,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./input-markdown.component.css']
 })
 export class InputMarkdownComponent implements OnInit {
-  markdownContent = '';
+  // whatever we write in textarea will be saved here with two way binding
+  @Input() markdownContent = '';
+  @Output() changeMarkdown = new EventEmitter<string>();
 
   constructor() { }
 

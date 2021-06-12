@@ -28,6 +28,15 @@ import { FormActorComponent } from './actors/form-actor/form-actor.component';
 import { InputImgComponent } from './utilities/input-img/input-img.component';
 import { InputMarkdownComponent } from './utilities/input-markdown/input-markdown.component';
 import {MarkdownModule} from 'ngx-markdown';
+import { MovieTheaterFormComponent } from './movie-theaters/movie-theater-form/movie-theater-form.component';
+import { LeafletModule} from '@asymmetrik/ngx-leaflet';
+import 'leaflet/dist/images/marker-shadow.png';
+import { MapComponent } from './utilities/map/map.component';
+import { FormMovieComponent } from './movies/form-movie/form-movie.component';
+import { MultipleSelectorComponent } from './utilities/multiple-selector/multiple-selector.component';
+import { ActorsAutocompleteComponent } from './actors/actors-autocomplete/actors-autocomplete.component';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
+import { DisplayErrorsComponent } from './utilities/display-errors/display-errors.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +61,13 @@ import {MarkdownModule} from 'ngx-markdown';
     MovieFilterComponent,
     FormActorComponent,
     InputImgComponent,
-    InputMarkdownComponent
+    InputMarkdownComponent,
+    MovieTheaterFormComponent,
+    MapComponent,
+    FormMovieComponent,
+    MultipleSelectorComponent,
+    ActorsAutocompleteComponent,
+    DisplayErrorsComponent
   ],
   imports: [
     BrowserModule,
@@ -61,6 +76,8 @@ import {MarkdownModule} from 'ngx-markdown';
     MaterialModule,
     ReactiveFormsModule,
     FormsModule,
+    LeafletModule,
+    HttpClientModule,
     MarkdownModule.forRoot()
   ],
   providers: [],

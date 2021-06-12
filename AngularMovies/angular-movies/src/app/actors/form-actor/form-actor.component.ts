@@ -13,7 +13,7 @@ export class FormActorComponent implements OnInit {
 
   form: FormGroup;
 
-  // we are recieving this from edit-actor component
+  // we are receiving this from edit-actor component
   @Input() model: ActorCreationDTO;
 
   // eventemitter prema između ostalog actor-create
@@ -26,7 +26,7 @@ export class FormActorComponent implements OnInit {
       }],
       dateOfBirth: '',
       picture: '',
-     // biography: ''
+      biography: ''
     });
 
     if (this.model !== undefined){
@@ -34,6 +34,7 @@ export class FormActorComponent implements OnInit {
     }
   }
 
+  // ovako popunjavamo formu, we are passing image to the form field
   onImageSelected(image){
     this.form.get('picture').setValue(image);
   }
