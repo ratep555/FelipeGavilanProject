@@ -1,5 +1,4 @@
 import { HttpClient } from '@angular/common/http';
-import { getAllLifecycleHooks } from '@angular/compiler/src/lifecycle_reflector';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -9,16 +8,28 @@ import { GenreCreationDTO, GenreDTO } from './genres.model';
   providedIn: 'root'
 })
 export class GenresService {
-  private apiURL = environment.apiURL + '/genres';
 
   constructor(private http: HttpClient) { }
 
+  private apiURL = environment.apiURL + '/genres';
 
-getAll(): Observable<GenreDTO[]>{
-return this.http.get<GenreDTO[]>(this.apiURL);
-}
+  getAll(): Observable<GenreDTO[]>{
+    return this.http.get<GenreDTO[]>(this.apiURL);
+  }
 
-create(genre: GenreCreationDTO) {
-  return this.http.post(this.apiURL, genre);
-}
+  getById(id: number): Observable<GenreDTO>{
+    return this.http.get<GenreDTO>(`${this.apiURL}/${id}`);
+  }
+
+  create(genre: GenreCreationDTO){
+    return this.http.post(this.apiURL, genre);
+  }
+
+  edit(id: number, genre: GenreCreationDTO){
+    return this.http.put(`${this.apiURL}/${id}`, genre);
+  }
+
+  delete(id: number) {
+    return this.http.delete(`${this.apiURL}/${id}`);
+  }
 }

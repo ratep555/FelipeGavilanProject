@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using MoviesAPI.Filters;
+using MoviesAPI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +44,10 @@ namespace MoviesAPI
            });
             });
 
+            services.AddAutoMapper(typeof(Startup));
+            services.AddScoped<IFileStorageService, InAppStorageService>();
+            services.AddHttpContextAccessor();
+
             //this way we are applying our global filters
             services.AddControllers(options =>
             {
@@ -68,6 +74,8 @@ namespace MoviesAPI
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseRouting();
 

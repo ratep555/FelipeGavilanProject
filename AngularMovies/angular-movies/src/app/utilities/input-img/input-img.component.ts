@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { toBase64 } from '../utils';
 
 @Component({
@@ -7,26 +7,27 @@ import { toBase64 } from '../utils';
   styleUrls: ['./input-img.component.css']
 })
 export class InputImgComponent implements OnInit {
-  imageBase64: string;
-  @Input() urlCurrentImage: string;
-
-  // when the user selects an image, we want to rise an event
-  // we will send file to parent component
-  @Output() ImageSelected = new EventEmitter<File>();
 
   constructor() { }
+
+  imageBase64: string;
+
+  @Input()
+  urlCurrentImage: string;
+
+  @Output()
+  onImageSelected = new EventEmitter<File>();
 
   ngOnInit(): void {
   }
 
-  // we are receiving event
-   change(event){
+  change(event){
     if (event.target.files.length > 0){
       const file: File = event.target.files[0];
       toBase64(file).then((value: string) => this.imageBase64 = value);
-      this.ImageSelected.emit(file);
-      // if the user changes the image
+      this.onImageSelected.emit(file);
       this.urlCurrentImage = null;
     }
   }
+
 }

@@ -8,7 +8,7 @@ export function toBase64(file: File){
         reader.onerror = (error) => reject(error);
     });
 }
-
+// output is an array of strings
 export function parseWebAPIErrors(response: any): string[] {
     const result: string[] = [];
 
@@ -33,4 +33,23 @@ export function parseWebAPIErrors(response: any): string[] {
     }
 
     return result;
+}
+
+export function formatDateFormData(date: Date){
+    date = new Date(date);
+    const format = new Intl.DateTimeFormat('en', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+
+    const [
+        {value: month},
+        {value: day},
+        {value: year}
+    ] = format.formatToParts(date);
+
+    // now we are transforming date into a string
+    // yyyy-MM-dd
+    return `${year}-${month}-${day}`;
 }

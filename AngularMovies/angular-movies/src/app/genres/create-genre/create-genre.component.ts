@@ -24,7 +24,7 @@ export class CreateGenreComponent implements OnInit {
     this.genresService.create(genreCreationDTO).subscribe(() => {
       this.router.navigate(['/genres']);
       // we are creating logic to parse errors from api and put them in string array koji je gore
-    }, error => parseWebAPIErrors(error));
+    }, error => this.errors = parseWebAPIErrors(error));
   }
 
 

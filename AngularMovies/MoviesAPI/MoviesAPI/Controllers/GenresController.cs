@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MoviesAPI.DTOs;
 using MoviesAPI.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,46 +24,74 @@ namespace MoviesAPI.Controllers
     {
         private readonly ILogger<GenresController> logger;
         private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
-        public GenresController(ILogger<GenresController> logger, ApplicationDbContext context)
+        public GenresController(ILogger<GenresController> logger, ApplicationDbContext context, IMapper mapper)
         {
             this.logger = logger;
             this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpGet] // api/genres
-        public async Task<ActionResult<List<Genre>>> Get()
+        public async Task<ActionResult<List<GenreDTO>>> Get()
         {
             logger.LogInformation("Getting all the genres");
 
-            return await context.Genres.ToListAsync();
+            var genres = await context.Genres.OrderBy(x => x.Name).ToListAsync();
+
+            return mapper.Map<List<GenreDTO>>(genres);
 
         }
 
         [HttpGet("{Id:int}", Name = "getGenre")] // api/genres/example
-        public ActionResult<Genre> Get(int Id)
+        public async Task<ActionResult<GenreDTO>> Get(int Id)
         {
-            throw new NotImplementedException();
+            var genre = await context.Genres.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (genre == null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<GenreDTO>(genre);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Genre genre)
+        public async Task<ActionResult> Post([FromBody] GenreCreationDTO genreCreationDTO)
         {
+            var genre = mapper.Map<Genre>(genreCreationDTO);
+
             context.Add(genre);
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put(int id, [FromBody] GenreCreationDTO genreCreationDTO)
+        {
+            var genre = mapper.Map<Genre>(genreCreationDTO);
+            genre.Id = id;
+            context.Entry(genre).State = EntityState.Modified;
             await context.SaveChangesAsync();
             return NoContent();
         }
 
-        [HttpPut]
-        public ActionResult Put([FromBody] Genre genre)
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int Id)
         {
-            throw new NotImplementedException();
-        }
+            var genre = await context.Genres.FirstOrDefaultAsync(x => x.Id == Id);
 
-        [HttpDelete]
-        public ActionResult Delete()
-        {
-            throw new NotImplementedException();
+            if (genre == null)
+            {
+                return NotFound();
+            }
+
+            context.Remove(genre);
+            await context.SaveChangesAsync();
+            return NoContent();
+
         }
     }
 }

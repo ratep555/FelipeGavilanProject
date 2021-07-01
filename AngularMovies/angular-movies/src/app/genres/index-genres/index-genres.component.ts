@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActorDTO } from 'src/app/actors/actors.model';
+import { GenreDTO } from '../genres.model';
 import { GenresService } from '../genres.service';
 
 @Component({
@@ -8,13 +10,27 @@ import { GenresService } from '../genres.service';
 })
 export class IndexGenresComponent implements OnInit {
 
+  genres: GenreDTO[];
+
+  columnsToDisplay = ['name', 'actions'];
+
   constructor(private genresService: GenresService) { }
 
-  // until we subscribe to an observable, the http request will not be send
   ngOnInit(): void {
-   this.genresService.getAll().subscribe(genres => {
-   console.log(genres);
-   });
+   this.loadGenres();
+  }
+
+  loadGenres(){
+    this.genresService.getAll().subscribe(genres => {
+      this.genres = genres;
+    });
+  }
+
+  delete(id: number){
+    this.genresService.delete(id)
+    .subscribe(() => {
+      this.loadGenres();
+    });
   }
 
 }

@@ -8,6 +8,7 @@ export interface ActorCreationDTO{
 // we created another clas because when we receive picture from api, it will be string not file
 // one class is for create and another for edit
 export interface ActorDTO {
+    id: number;
     name: string;
     dateOfBirth: Date;
     picture: string;

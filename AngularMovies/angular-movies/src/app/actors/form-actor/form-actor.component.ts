@@ -13,11 +13,11 @@ export class FormActorComponent implements OnInit {
 
   form: FormGroup;
 
-  // we are receiving this from edit-actor component
-  @Input() model: ActorCreationDTO;
+  @Input()
+  model: ActorCreationDTO;
 
-  // eventemitter prema između ostalog actor-create
-  @Output() saveChangesy = new EventEmitter<ActorCreationDTO>();
+  @Output()
+  onSaveChanges = new EventEmitter<ActorCreationDTO>();
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
@@ -34,7 +34,6 @@ export class FormActorComponent implements OnInit {
     }
   }
 
-  // ovako popunjavamo formu, we are passing image to the form field
   onImageSelected(image){
     this.form.get('picture').setValue(image);
   }
@@ -44,7 +43,7 @@ export class FormActorComponent implements OnInit {
   }
 
   saveChanges(){
-    this.saveChangesy.emit(this.form.value);
+    this.onSaveChanges.emit(this.form.value);
   }
 
 }
