@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,12 +10,14 @@ using MoviesAPI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MoviesAPI.Controllers
 {
     [Route("api/actors")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class ActorsController : ControllerBase
     {
         private readonly ApplicationDbContext context;
@@ -30,12 +34,28 @@ namespace MoviesAPI.Controllers
             this.fileStorageService = fileStorageService;
         }
         [HttpGet]
-        public async Task<ActionResult<List<ActorDTO>>> Get()
+        public async Task<ActionResult<List<ActorDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
         {
-            var actors = await context.Actors.ToListAsync();
-
+            var queryable = context.Actors.AsQueryable();
+            await HttpContext.InsertParametersPaginationInHeader(queryable);
+            var actors = await queryable.OrderBy(x => x.Name).Paginate(paginationDTO).ToListAsync();
             return mapper.Map<List<ActorDTO>>(actors);
         }
+
+        [HttpPost("searchByName")]
+        public async Task<ActionResult<List<ActorsMovieDTO>>> SearchByName([FromBody] string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) { return new List<ActorsMovieDTO>(); }
+            return await context.Actors
+                .Where(x => x.Name.Contains(name))
+                .OrderBy(x => x.Name)
+                // we are doing small mapping here
+                .Select(x => new ActorsMovieDTO { Id = x.Id, Name = x.Name, Picture = x.Picture })
+                .Take(5)
+                .ToListAsync();
+        }
+
+
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ActorDTO>> Get(int id)
         {
@@ -63,6 +83,28 @@ namespace MoviesAPI.Controllers
             await context.SaveChangesAsync();
             return NoContent();
         }
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int id, [FromForm] ActorCreationDTO actorCreationDTO)
+        {
+            var actor = await context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (actor == null)
+            {
+                return NotFound();
+            }
+            // we are mapping actorcreationdto to actor in a way that allows
+            // me to update only those fields that have been updated
+            actor = mapper.Map(actorCreationDTO, actor);
+
+            if (actorCreationDTO.Picture != null)
+            {
+                actor.Picture = await fileStorageService.EditFile(containerName,
+                    actorCreationDTO.Picture, actor.Picture);
+            }
+
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
@@ -76,11 +118,10 @@ namespace MoviesAPI.Controllers
             context.Remove(actor);
             await context.SaveChangesAsync();
 
-          //  await fileStorageService.DeleteFile(actor.Picture, containerName);
+            await fileStorageService.DeleteFile(actor.Picture, containerName);
 
             return NoContent();
         }
-
     }
 }
 

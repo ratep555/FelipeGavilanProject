@@ -9,6 +9,7 @@ export class InputMarkdownComponent implements OnInit {
   // whatever we write in textarea will be saved here with two way binding
   @Input() markdownContent = '';
   @Output() changeMarkdown = new EventEmitter<string>();
+  @Input() label = 'Value';
 
   constructor() { }
 

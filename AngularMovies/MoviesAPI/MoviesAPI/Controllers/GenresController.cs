@@ -19,6 +19,7 @@ namespace MoviesAPI.Controllers
     // controllera onda se mijenja i ovo, a klijenti imaju stari path
     [Route("api/genres")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
 
     public class GenresController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace MoviesAPI.Controllers
         }
 
         [HttpGet] // api/genres
+        [AllowAnonymous]
         public async Task<ActionResult<List<GenreDTO>>> Get()
         {
             logger.LogInformation("Getting all the genres");

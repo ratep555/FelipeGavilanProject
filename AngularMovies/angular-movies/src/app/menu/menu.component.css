@@ -4,3 +4,14 @@ mat-toolbar{
     top: 0;
     z-index: 1000;
 }
+
+app-authorize-view {
+    display: flex;
+}
+
+/* // sa ovim možemo sve pisati na desno, lekcija 133, treba nam kod login
+ */
+ 
+ .space {
+    flex: 1 1 auto;
+}

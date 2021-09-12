@@ -17,7 +17,10 @@ export function parseWebAPIErrors(response: any): string[] {
         if (typeof response.error === 'string'){
             result.push(response.error);
             // ovdje parsiramo greške
-        } else {
+        } else if (Array.isArray(response.error)) {
+            response.error.forEach(value => result.push(value.description));
+        }
+        else {
             const mapErrors = response.error.errors;
             // we are transforming object into array
             const entries = Object.entries(mapErrors);
@@ -44,8 +47,8 @@ export function formatDateFormData(date: Date){
     });
 
     const [
-        {value: month},
-        {value: day},
+        {value: month}, ,
+        {value: day}, ,
         {value: year}
     ] = format.formatToParts(date);
 

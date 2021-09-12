@@ -1,5 +1,13 @@
+import { HttpResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { GenreDTO } from 'src/app/genres/genres.model';
+import { GenresService } from 'src/app/genres/genres.service';
+import { MovieDTO } from '../movies.model';
+import { MoviesService } from '../movies.service';
+import {Location} from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-movie-filter',
@@ -8,19 +16,22 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 })
 export class MovieFilterComponent implements OnInit {
 
-  constructor(private formBuilder: FormBuilder) { }
+  // location alows us to edit whats in url, to interact with it, kada utipkamo npr moana da to pokaže u url
+  constructor(private formBuilder: FormBuilder,
+              private moviesService: MoviesService,
+              private genresService: GenresService,
+              private location: Location,
+              private activatedRoute: ActivatedRoute) { }
 
-  form: FormGroup;
+ form: FormGroup;
 
-  genres = [{id: 1, name: 'Drama'}, {id: 2, name: 'Action'}];
+  genres: GenreDTO[];
 
-  movies = [
-    {title: 'Spider-Man', poster: 'https://m.media-amazon.com/images/M/MV5BMGZlNTY1ZWUtYTMzNC00ZjUyLWE0MjQtMTMxN2E3ODYxMWVmXkEyXkFqcGdeQXVyMDM2NDM2MQ@@._V1_UX182_CR0,0,182,268_AL_.jpg'},
-    {title: 'Moana', poster: 'https://m.media-amazon.com/images/M/MV5BMjI4MzU5NTExNF5BMl5BanBnXkFtZTgwNzY1MTEwMDI@._V1_UX182_CR0,0,182,268_AL_.jpg'},
-    {title: 'Inception', poster: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_UX182_CR0,0,182,268_AL_.jpg'}
-  ];
-
-  originalMovies = this.movies;
+  movies: MovieDTO[];
+  currentPage = 1;
+  recordsPerPage = 10;
+  initialFormValues: any;
+  totalAmountOfRecords;
 
   ngOnInit(): void {
     this.form = this.formBuilder.group({
@@ -30,27 +41,116 @@ export class MovieFilterComponent implements OnInit {
       inTheaters: false
     });
 
+    this.initialFormValues = this.form.value;
+    this.readParametersFromURL();
+
+    this.genresService.getAll().subscribe(genres => {
+      this.genres = genres;
+    });
+
+    this.filterMovies(this.form.value);
+
 // sa valuechanges će se automatski izmjenjivati vrijednost kod search, to omogućuju reactiveforms
 // when we subscribe, we react to any change our form recieves
-// values are values of the from, baš kao i kad subscribamo kod servera
+// values are values of the form, baš kao i kad subscribamo kod servera
     this.form.valueChanges
       .subscribe(values => {
         // this is just a trick to reset the movies
-        this.movies = this.originalMovies;
         this.filterMovies(values);
+        // sa ovim se i u url mijenja vrijednost dok pišeš u searchinput
+        this.writeParametersInURL();
       });
 
+
   }
+
+
 
   // values dobijaš iz forms
   filterMovies(values: any){
-    if (values.title){
-      this.movies = this.movies.filter(movie => movie.title.indexOf(values.title) !== -1);
-    }
+    values.page = this.currentPage;
+    values.recordsPerPage = this.recordsPerPage;
+    this.moviesService.filter(values).subscribe((response: HttpResponse<MovieDTO[]>) => {
+      this.movies = response.body;
+      this.totalAmountOfRecords = response.headers.get('totalAmountOfRecords');
+    });
   }
+  // sa ovim nakon refreshanja sve ostaje i u url i na naslovnici u chromu
+  private readParametersFromURL(){
+    // hover over queryparams
+    this.activatedRoute.queryParams.subscribe(params => {
+      const obj: any = {};
+     // if there is a title in querystring
+      if (params.title){
+        obj.title = params.title;
+      }
+
+      if (params.genreId){
+        obj.genreId = Number(params.genreId);
+      }
+
+      if (params.upcomingReleases){
+        obj.upcomingReleases = params.upcomingReleases;
+      }
+
+      if (params.inTheaters){
+        obj.inTheaters = params.inTheaters;
+      }
+
+      if (params.page){
+        this.currentPage = params.page;
+      }
+
+      if (params.recordsPerPage){
+        this.recordsPerPage = params.recordsPerPage;
+      }
+
+      this.form.patchValue(obj);
+    });
+  }
+
 
   clearForm(){
-    this.form.reset();
-  }
+    this.form.patchValue(this.initialFormValues);
+    }
 
+   // we are creating querystring that we will put in the url with the help of location
+    private writeParametersInURL(){
+      const queryStrings = [];
+      const formValues = this.form.value;
+
+      if (formValues.title){
+        queryStrings.push(`title=${formValues.title}`);
+      }
+
+      if (formValues.genreId !== '0'){
+        queryStrings.push(`genreId=${formValues.genreId}`);
+      }
+
+      if (formValues.upcomingReleases){
+        queryStrings.push(`upcomingReleases=${formValues.upcomingReleases}`);
+      }
+
+      if (formValues.inTheaters){
+        queryStrings.push(`inTheaters=${formValues.inTheaters}`);
+      }
+
+      queryStrings.push(`page=${this.currentPage}`);
+      queryStrings.push(`recordsPerPage=${this.recordsPerPage}`);
+      // hover over replacestate
+      this.location.replaceState('movies/filter', queryStrings.join('&'));
+    }
+
+    paginatorUpdate(event: PageEvent){
+      this.currentPage = event.pageIndex + 1;
+      this.recordsPerPage = event.pageSize;
+      this.writeParametersInURL();
+      this.filterMovies(this.form.value);
+    }
+
+    onDelete(){
+      this.filterMovies(this.form.value);
+    }
 }
+
+

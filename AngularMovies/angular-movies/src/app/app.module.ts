@@ -36,8 +36,15 @@ import { MapComponent } from './utilities/map/map.component';
 import { FormMovieComponent } from './movies/form-movie/form-movie.component';
 import { MultipleSelectorComponent } from './utilities/multiple-selector/multiple-selector.component';
 import { ActorsAutocompleteComponent } from './actors/actors-autocomplete/actors-autocomplete.component';
-import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {HttpClient, HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import { DisplayErrorsComponent } from './utilities/display-errors/display-errors.component';
+import { MovieDetailsComponent } from './movies/movie-details/movie-details.component';
+import { AuthorizeViewComponent } from './security/authorize-view/authorize-view.component';
+import { LoginComponent } from './security/login/login.component';
+import { RegisterComponent } from './security/register/register.component';
+import { AuthenticationFormComponent } from './security/authentication-form/authentication-form.component';
+import { JwtInterceptorService } from './security/jwt-interceptor.service';
+import { UsersIndexComponent } from './security/users-index/users-index.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +75,13 @@ import { DisplayErrorsComponent } from './utilities/display-errors/display-error
     FormMovieComponent,
     MultipleSelectorComponent,
     ActorsAutocompleteComponent,
-    DisplayErrorsComponent
+    DisplayErrorsComponent,
+    MovieDetailsComponent,
+    AuthorizeViewComponent,
+    LoginComponent,
+    RegisterComponent,
+    AuthenticationFormComponent,
+    UsersIndexComponent
   ],
   imports: [
     BrowserModule,
@@ -82,7 +95,10 @@ import { DisplayErrorsComponent } from './utilities/display-errors/display-error
     MarkdownModule.forRoot(),
     SweetAlert2Module.forRoot()
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+ providers: [{
+    provide: HTTP_INTERCEPTORS,
+    useClass: JwtInterceptorService,
+    multi: true
+  }],  bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -15,4 +15,9 @@ export interface ActorDTO {
     biography: string;
 }
 
-
+export interface ActorsMovieDTO {
+    id: number;
+    name: string;
+    character: string;
+    picture: string;
+}
